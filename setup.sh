@@ -3,6 +3,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
+for b in /opt/homebrew/bin/brew /usr/local/bin/brew; do [ -x "$b" ] && eval "$("$b" shellenv)" && break; done
 if ! command -v brew >/dev/null 2>&1; then
   echo "Homebrew is needed first. Install it from https://brew.sh, then run ./setup.sh again."
   exit 1
@@ -15,6 +16,5 @@ PY="$(brew --prefix)/bin/python3"
 [ -d .venv ] || "$PY" -m venv .venv
 .venv/bin/pip install --quiet --upgrade pip
 .venv/bin/pip install --quiet -r requirements.txt
-chmod +x vinyl "Vinyl Living Room.command"
-echo
-echo "All set. Double-click 'Vinyl Living Room.command' to start."
+chmod +x vinyl start.sh install.sh "Vinyl Living Room.command"
+shasum requirements.txt | cut -d' ' -f1 > .venv/.req

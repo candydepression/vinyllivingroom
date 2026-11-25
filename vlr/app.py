@@ -323,8 +323,13 @@ class Handler(BaseHTTPRequestHandler):
 
 def serve(port: int = 8765, open_browser: bool = True) -> None:
     HOME.mkdir(parents=True, exist_ok=True)
-    httpd = ThreadingHTTPServer(("127.0.0.1", port), Handler)
     url = f"http://localhost:{port}/"
+    try:
+        httpd = ThreadingHTTPServer(("127.0.0.1", port), Handler)
+    except OSError:  # already running (e.g. double-clicked twice): just show it
+        print("Vinyl Living Room is already running; opening it in your browser.")
+        webbrowser.open(url)
+        return
     print(f"Vinyl Living Room is running at {url}\nEpisodes are saved in {HOME}\nClose this window to stop.")
     if open_browser:
         threading.Timer(0.5, lambda: webbrowser.open(url)).start()

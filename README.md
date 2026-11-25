@@ -9,15 +9,25 @@ Turns a phone video plus the TP-7 recording of a whole album into a finished You
 - Sets the volume to a YouTube-friendly level with a plain volume change, never compression.
 - Uploads to YouTube as **private**, and only when you click Upload and confirm.
 
-## Setup (once)
+## Setup (once, about 10 minutes)
 
-1. Install Homebrew from https://brew.sh (paste the one line it shows into Terminal).
-2. Get this folder onto your Mac, for example with GitHub Desktop or `git clone`.
-3. In Terminal: `cd` into the folder, then run `./setup.sh`. This installs ffmpeg and the Python bits.
+Open **Terminal** (press ⌘-Space, type "Terminal", press Return). Paste the line for your case and press Return.
+
+**If this repo is public:**
+```
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/candydepression/vinyllivingroom/main/install.sh)"
+```
+
+**If this repo is private:** on GitHub click **Code › Download ZIP** (it lands in Downloads and unzips itself), then paste:
+```
+bash ~/Downloads/vinyllivingroom-main/install.sh
+```
+
+The installer sets up everything (Homebrew, ffmpeg, Python, the app) and puts a **Vinyl Living Room** icon on your Desktop. Homebrew asks for your Mac password once. The letters don't show while you type; that's normal. With the public setup, the app updates itself each time you open it.
 
 ## Every week
 
-1. Double-click **`Vinyl Living Room.command`**. A page opens in your browser.
+1. Double-click **Vinyl Living Room** on your Desktop. A page opens in your browser. Leave the small Terminal window open while you work.
 2. Click **+ New episode**. Drop in the phone video and the TP-7 `.wav`, then type the artist, album, YouTube title, description and tags. Everything saves automatically.
 3. Click **Preview**. In a minute or two you get the opening, a minute from the middle (to check lip-sync), the ending, and before/after colour shots.
 4. Click **Make video** to render the full album. This takes a while; leave the window open.
