@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Command-line entry point:  ./vinyl app | new FOLDER | preview FOLDER | make FOLDER | upload FOLDER
+DIR="$(cd "$(dirname "$0")" && pwd)"
+if [ ! -x "$DIR/.venv/bin/python" ]; then
+  echo "Run ./setup.sh first."; exit 1
+fi
+PYTHONPATH="$DIR" exec "$DIR/.venv/bin/python" -m vlr "$@"

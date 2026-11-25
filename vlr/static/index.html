@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vinyl Living Room</title>
+<style>
+@font-face { font-family: "Jost"; src: url("/Jost.ttf") format("truetype"); font-weight: 100 900; }
+:root {
+  --bg: #15120f; --panel: #1e1a16; --line: #3a322a; --text: #eee6d6; --dim: #a39a8b;
+  --accent: #d9a441; --danger: #d0654a; --ok: #7fb08a;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 300 16px/1.5 "Jost", system-ui, sans-serif; }
+header { padding: 28px 32px 8px; display: flex; align-items: baseline; gap: 16px; }
+header h1 { margin: 0; font-weight: 300; font-size: 22px; letter-spacing: .18em; text-transform: uppercase; }
+header span { color: var(--dim); font-size: 13px; }
+main { display: grid; grid-template-columns: 260px 1fr; gap: 24px; padding: 16px 32px 48px; max-width: 1200px; }
+@media (max-width: 800px) { main { grid-template-columns: 1fr; padding: 16px; } header { padding: 20px 16px 4px; } }
+aside button.new { width: 100%; }
+.list { margin-top: 12px; display: flex; flex-direction: column; gap: 4px; }
+.list a { display: block; padding: 10px 12px; border-radius: 8px; color: var(--text); text-decoration: none; cursor: pointer; }
+.list a:hover { background: var(--panel); }
+.list a.on { background: var(--panel); outline: 1px solid var(--line); }
+.list small { display: block; color: var(--dim); font-size: 12px; }
+section.card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 24px; margin-bottom: 20px; }
+h2 { margin: 0 0 16px; font-weight: 400; font-size: 13px; letter-spacing: .16em; text-transform: uppercase; color: var(--dim); }
+.drops { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 600px) { .drops { grid-template-columns: 1fr; } }
+.drop { border: 1.5px dashed var(--line); border-radius: 12px; padding: 22px; text-align: center; cursor: pointer; transition: .15s; min-height: 120px; display: flex; flex-direction: column; justify-content: center; }
+.drop:hover, .drop.over { border-color: var(--accent); background: #2a231b; }
+.drop b { font-weight: 400; display: block; margin-bottom: 4px; }
+.drop .name { color: var(--accent); word-break: break-all; }
+.drop .hint { color: var(--dim); font-size: 13px; }
+.bar { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; margin-top: 10px; display: none; }
+.bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .2s; }
+label { display: block; font-size: 13px; color: var(--dim); margin: 14px 0 6px; }
+input[type=text], textarea { width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font: inherit; }
+input[type=text]:focus, textarea:focus { outline: none; border-color: var(--accent); }
+textarea { min-height: 140px; resize: vertical; }
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 600px) { .row { grid-template-columns: 1fr; } }
+details summary { cursor: pointer; color: var(--dim); font-size: 13px; margin-top: 18px; }
+input[type=range] { width: 100%; accent-color: var(--accent); }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+button { font: inherit; font-weight: 400; color: var(--text); background: transparent; border: 1px solid var(--line); border-radius: 999px; padding: 10px 20px; cursor: pointer; }
+button:hover:not(:disabled) { border-color: var(--accent); }
+button.primary { background: var(--accent); color: #1a140c; border-color: var(--accent); }
+button:disabled { opacity: .35; cursor: default; }
+.status { margin-top: 16px; }
+.status .bar { display: block; height: 6px; }
+.log { margin-top: 12px; font-size: 13px; color: var(--dim); white-space: pre-wrap; max-height: 220px; overflow: auto; }
+.err { color: var(--danger); margin-top: 10px; white-space: pre-wrap; }
+.ok { color: var(--ok); }
+.previews { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.previews figure { margin: 0; }
+.previews video, .previews img { width: 100%; border-radius: 8px; background: #000; display: block; }
+.previews figcaption { font-size: 12px; color: var(--dim); margin-top: 6px; }
+.empty { color: var(--dim); }
+dialog { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 14px; max-width: 480px; padding: 24px; }
+dialog::backdrop { background: rgba(0,0,0,.6); }
+.muted { color: var(--dim); font-size: 13px; }
+</style>
+</head>
+<body>
+<header><h1>Vinyl Living Room</h1><span id="home"></span></header>
+<main>
+  <aside>
+    <button class="new" id="new">+ New episode</button>
+    <div class="list" id="list"></div>
+  </aside>
+
+  <div id="editor">
+    <section class="card">
+      <h2>1 · Drop your files</h2>
+      <div class="drops">
+        <div class="drop" data-kind="video">
+          <b>Phone video</b><span class="name"></span>
+          <span class="hint">Drop the video here, or click to choose<br>.mov / .mp4</span>
+          <div class="bar"><i></i></div>
+        </div>
+        <div class="drop" data-kind="audio">
+          <b>TP-7 audio</b><span class="name"></span>
+          <span class="hint">Drop the recording here, or click to choose<br>.wav</span>
+          <div class="bar"><i></i></div>
+        </div>
+      </div>
+      <input type="file" id="picker" hidden>
+    </section>
+
+    <section class="card">
+      <h2>2 · About the record</h2>
+      <div class="row">
+        <div><label for="artist">Artist</label><input type="text" id="artist" placeholder="Bill Evans Trio"></div>
+        <div><label for="album">Album</label><input type="text" id="album" placeholder="Sunday at the Village Vanguard"></div>
+      </div>
+      <label for="yt_title">YouTube title</label>
+      <input type="text" id="yt_title" maxlength="100" placeholder="Leave empty to use “Artist – Album”">
+      <label for="yt_description">YouTube description</label>
+      <textarea id="yt_description" placeholder="Pressing, gear, tracklist…"></textarea>
+      <label for="yt_tags">Tags (comma separated)</label>
+      <input type="text" id="yt_tags" placeholder="vinyl, jazz, full album">
+      <details>
+        <summary>More options</summary>
+        <div class="row">
+          <div><label for="start">Start at (phone video time, optional)</label><input type="text" id="start" placeholder="e.g. 0:12"></div>
+          <div><label for="end">End at (optional)</label><input type="text" id="end" placeholder="e.g. 44:30"></div>
+        </div>
+        <label for="look">Nostalgic colour look: <span id="lookv"></span></label>
+        <input type="range" id="look" min="0" max="2" step="0.1">
+      </details>
+      <p class="muted" id="saved"></p>
+    </section>
+
+    <section class="card">
+      <h2>3 · Make it</h2>
+      <div class="actions">
+        <button id="preview">Preview</button>
+        <button id="make" class="primary">Make video</button>
+        <button id="reveal">Show in Finder</button>
+        <button id="upload">Upload to YouTube (private)</button>
+      </div>
+      <p class="muted">Preview makes three short clips (opening, middle, ending) and colour before/after shots in about a minute or two.
+        “Make video” renders the whole album; that takes a while. Nothing goes to YouTube until you click Upload and confirm.</p>
+      <div class="status" id="status" hidden>
+        <div class="bar"><i id="jobbar"></i></div>
+        <div class="log" id="log"></div>
+        <div class="err" id="err"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>4 · Watch</h2>
+      <div class="previews" id="previews"><p class="empty">Nothing yet.</p></div>
+    </section>
+  </div>
+</main>
+
+<dialog id="confirm">
+  <h2>Upload to YouTube?</h2>
+  <p id="confirmText"></p>
+  <p class="muted">It will be <b>private</b>. You publish it yourself in YouTube Studio.</p>
+  <div class="actions"><button id="cancelUp">Cancel</button><button class="primary" id="doUp">Upload as private</button></div>
+</dialog>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const H = { "X-VLR": "1", "Content-Type": "application/json" };
+let current = null;          // episode details
+let saveTimer = null;
+const fields = ["artist", "album", "yt_title", "yt_description", "yt_tags", "start", "end", "look"];
+
+async function api(path, opts = {}) {
+  const r = await fetch(path, opts);
+  const j = await r.json().catch(() => ({ error: "Unexpected response" }));
+  if (!r.ok || j.error) throw new Error(j.error || r.statusText);
+  return j;
+}
+
+async function loadList() {
+  const { episodes, home } = await api("/api/episodes");
+  $("#home").textContent = "Saved in " + home;
+  const list = $("#list");
+  list.innerHTML = "";
+  for (const e of episodes) {
+    const a = document.createElement("a");
+    a.className = current && current.id === e.id ? "on" : "";
+    const state = e.uploaded ? "uploaded" : e.final ? "video ready" : "draft";
+    a.innerHTML = `<span></span><small></small>`;
+    a.firstChild.textContent = e.album || "(no album yet)";
+    a.lastChild.textContent = (e.artist || "") + " · " + state;
+    a.onclick = () => openEpisode(e.id);
+    list.appendChild(a);
+  }
+  return episodes;
+}
+
+function fill(ep) {
+  current = ep && ep.id ? ep : null;
+  for (const f of fields) {
+    const el = $("#" + f);
+    el.value = f === "yt_tags" ? (ep.yt_tags || []).join(", ") : (ep[f] ?? "");
+  }
+  $("#lookv").textContent = Number(ep.look ?? 1).toFixed(1);
+  for (const d of document.querySelectorAll(".drop")) {
+    const k = d.dataset.kind, name = ep[k] || "";
+    d.querySelector(".name").textContent = name ? `${name} · ${(ep[k + "_size"] / 1e9).toFixed(2)} GB` : "";
+  }
+  renderOutputs();
+  updateButtons();
+}
+
+function blankEpisode() {
+  fill({ look: 1, yt_tags: [] });
+  $("#saved").textContent = "Fill in the artist and album, or drop a file, to start a new episode.";
+  updateButtons();
+}
+
+function formData() {
+  const d = {};
+  for (const f of fields) d[f] = $("#" + f).value;
+  return d;
+}
+
+async function ensureEpisode() {
+  if (current) return current;
+  const ep = await api("/api/episodes", { method: "POST", headers: H, body: JSON.stringify(formData()) });
+  current = ep;
+  localStorage.setItem("vlr.last", ep.id);
+  await loadList();
+  return ep;
+}
+
+async function save() {
+  try {
+    const ep = await ensureEpisode();
+    current = await api(`/api/episode/${encodeURIComponent(ep.id)}`, { method: "POST", headers: H, body: JSON.stringify(formData()) });
+    $("#saved").textContent = "Saved.";
+    loadList();
+    updateButtons();
+  } catch (e) { $("#saved").textContent = "Couldn't save: " + e.message; }
+}
+
+for (const f of fields) {
+  $("#" + f).addEventListener("input", () => {
+    if (f === "look") $("#lookv").textContent = Number($("#look").value).toFixed(1);
+    $("#saved").textContent = "…";
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(save, 600);
+  });
+}
+
+async function openEpisode(id) {
+  try {
+    fill(await api(`/api/episode/${encodeURIComponent(id)}`));
+    $("#saved").textContent = "";
+    localStorage.setItem("vlr.last", id);
+    loadList();
+  } catch (e) { blankEpisode(); }
+}
+
+// ---- dropping files
+let pickKind = null;
+for (const d of document.querySelectorAll(".drop")) {
+  d.addEventListener("dragover", (e) => { e.preventDefault(); d.classList.add("over"); });
+  d.addEventListener("dragleave", () => d.classList.remove("over"));
+  d.addEventListener("drop", (e) => {
+    e.preventDefault(); d.classList.remove("over");
+    if (e.dataTransfer.files.length) sendFile(d.dataset.kind, e.dataTransfer.files[0]);
+  });
+  d.addEventListener("click", () => { pickKind = d.dataset.kind; $("#picker").accept = d.dataset.kind === "video" ? ".mov,.mp4,.m4v" : ".wav,.aif,.aiff,.flac"; $("#picker").click(); });
+}
+$("#picker").addEventListener("change", (e) => { if (e.target.files[0]) sendFile(pickKind, e.target.files[0]); e.target.value = ""; });
+document.addEventListener("dragover", (e) => e.preventDefault());
+document.addEventListener("drop", (e) => e.preventDefault());
+
+async function sendFile(kind, file) {
+  const zone = document.querySelector(`.drop[data-kind=${kind}]`);
+  const bar = zone.querySelector(".bar"), fillBar = bar.querySelector("i");
+  try {
+    const ep = await ensureEpisode();
+    bar.style.display = "block";
+    zone.querySelector(".name").textContent = `Copying ${file.name}…`;
+    const res = await new Promise((resolve, reject) => {
+      const x = new XMLHttpRequest();
+      x.open("PUT", `/api/episode/${encodeURIComponent(ep.id)}/file?kind=${kind}&name=${encodeURIComponent(file.name)}`);
+      x.setRequestHeader("X-VLR", "1");
+      x.upload.onprogress = (p) => { if (p.lengthComputable) fillBar.style.width = (100 * p.loaded / p.total) + "%"; };
+      x.onload = () => { try { const j = JSON.parse(x.responseText); j.error ? reject(new Error(j.error)) : resolve(j); } catch { reject(new Error("Upload failed")); } };
+      x.onerror = () => reject(new Error("Upload failed"));
+      x.send(file);
+    });
+    const keep = formData();
+    fill(res);
+    for (const f of fields) $("#" + f).value = keep[f];   // don't lose typing that happened meanwhile
+  } catch (e) {
+    zone.querySelector(".name").textContent = "";
+    alert(e.message);
+  } finally {
+    bar.style.display = "none"; fillBar.style.width = 0;
+  }
+}
+
+// ---- actions
+function updateButtons(job) {
+  const running = job && job.running;
+  const ready = current && current.video && current.audio && $("#artist").value.trim() && $("#album").value.trim();
+  $("#preview").disabled = !ready || running;
+  $("#make").disabled = !ready || running;
+  $("#upload").disabled = !(current && current.final) || running;
+  $("#reveal").disabled = !current;
+  $("#upload").textContent = current && current.uploaded ? "Upload again (private)" : "Upload to YouTube (private)";
+}
+
+async function run(action, body = {}) {
+  clearTimeout(saveTimer);
+  await save();
+  try {
+    await api(`/api/episode/${encodeURIComponent(current.id)}/${action}`, { method: "POST", headers: H, body: JSON.stringify(body) });
+    poll();
+  } catch (e) { alert(e.message); }
+}
+$("#preview").onclick = () => run("preview");
+$("#make").onclick = () => run("make");
+$("#reveal").onclick = () => current && api(`/api/episode/${encodeURIComponent(current.id)}/reveal`, { method: "POST", headers: H, body: "{}" });
+$("#upload").onclick = () => {
+  const t = $("#yt_title").value.trim() || `${$("#artist").value} – ${$("#album").value}`;
+  $("#confirmText").textContent = `“${t}”` + (current.uploaded ? `\n\nNote: this was already uploaded on ${current.uploaded.when}.` : "");
+  $("#confirm").showModal();
+};
+$("#cancelUp").onclick = () => $("#confirm").close();
+$("#doUp").onclick = () => { $("#confirm").close(); run("upload", { confirm: "upload" }); };
+
+let polling = false;
+async function poll() {
+  if (polling) return;
+  polling = true;
+  try {
+    while (true) {
+      const j = await api("/api/job");
+      showJob(j);
+      if (!j.running) break;
+      await new Promise((r) => setTimeout(r, 1000));
+    }
+    if (current) fill(await api(`/api/episode/${encodeURIComponent(current.id)}`));
+    loadList();
+  } catch (e) { /* server stopped */ }
+  polling = false;
+}
+
+function showJob(j) {
+  if (!j.action) return;
+  const mine = current && j.episode === current.id;
+  $("#status").hidden = !mine;
+  if (!mine) return updateButtons(j);
+  $("#jobbar").style.width = (100 * j.progress) + "%";
+  $("#log").textContent = j.log.join("\n");
+  $("#log").scrollTop = 1e9;
+  $("#err").textContent = j.error || "";
+  if (j.done && !j.running) $("#log").innerHTML += `\n<span class="ok">Finished.</span>`;
+  updateButtons(j);
+}
+
+function renderOutputs() {
+  const box = $("#previews");
+  box.innerHTML = "";
+  if (!current || !current.id || (!(current.previews || []).length && !current.final)) {
+    box.innerHTML = '<p class="empty">Nothing yet.</p>'; return;
+  }
+  const v = Date.now();
+  const url = (n) => `/out/${encodeURIComponent(current.id)}/${encodeURIComponent(n)}?v=${v}`;
+  const add = (name, caption) => {
+    const fig = document.createElement("figure");
+    const media = name.endsWith(".jpg") ? document.createElement("img") : document.createElement("video");
+    media.src = url(name);
+    if (media.tagName === "VIDEO") { media.controls = true; media.preload = "metadata"; }
+    const c = document.createElement("figcaption"); c.textContent = caption;
+    fig.append(media, c); box.appendChild(fig);
+  };
+  const labels = { "preview-1-opening.mp4": "Opening: title, fade in", "preview-2-middle.mp4": "A minute from the middle: check lip-sync",
+                   "preview-3-ending.mp4": "Ending: fade out", "preview-look.jpg": "Colour: original (left) vs look (right)" };
+  for (const p of current.previews) add(p, labels[p] || p);
+  if (current.final) add(current.final, "Finished video — watch it all before uploading");
+}
+
+$("#new").onclick = () => { blankEpisode(); loadList(); $("#artist").focus(); };
+
+(async () => {
+  const eps = await loadList();
+  const last = localStorage.getItem("vlr.last");
+  if (last && eps.some((e) => e.id === last)) await openEpisode(last); else blankEpisode();
+  poll();
+})();
+</script>
+</body>
+</html>
